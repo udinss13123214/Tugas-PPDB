@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih SMA atau SMK</title>
+    <link rel="stylesheet" href="css/daftar.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pilih Jenis Sekolah</h1>
+
+        <!-- Pilihan SMA dan SMK -->
+        <div class="school-type-selection">
+            <div class="school-option" id="sma-option">
+                <img src="pic/snpmb.png" alt="SMA" class="school-image">
+                <p>SMA</p>
+            </div>
+            <div class="school-option" id="smk-option">
+                <img src="pic/snpmb.png" alt="SMK" class="school-image">
+                <p>SMK</p>
+            </div>
+        </div>
+
+        <!-- Pilihan jurusan SMA dan SMK setelah memilih -->
+        <div class="school-list" id="school-list">
+            <!-- Sekolah SMA atau SMK akan ditampilkan di sini -->
+        </div>
+
+        <!-- Tombol untuk menutup pilihan sekolah -->
+        <button id="close-button" class="close-btn">Tutup Pilihan Sekolah</button>
+    </div>
+
+    <!-- Alert Box untuk konfirmasi pemilihan jurusan -->
+    <div id="alert-box" class="alert-box">
+        <div class="alert-content">
+            <p>Anda ingin memilih jurusan ini?</p>
+            <button id="confirm-btn">Ya</button>
+            <button id="cancel-btn">Tidak</button>
+        </div>
+    </div>
+
+    <!-- Alert Box untuk berhasil memilih jurusan -->
+    <div id="success-alert" class="alert-box">
+        <div class="alert-content">
+            <p>Berhasil memilih jurusan!</p>
+        </div>
+    </div>
+
+    <script src="js/daftar.js"></script>
+</body>
+</html>

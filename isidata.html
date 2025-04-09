@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Input Data</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+    <h2 class="text-xl font-semibold text-center mb-4">Form Input Data</h2>
+    <form id="dataForm" class="space-y-4">
+      <!-- Bagian Alamat -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="rt">RT</label>
+          <input class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" type="text" id="rt" required>
+        </div>
+        <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="rw">RW</label>
+          <input class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" type="text" id="rw" required>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="kelurahan">Kelurahan</label>
+          <input class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" type="text" id="kelurahan" required>
+        </div>
+        <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="kecamatan">Kecamatan</label>
+          <input class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" type="text" id="kecamatan" required>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700" for="nohp">No HP</label>
+        <input class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" type="text" id="nohp" required>
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700" for="agama">Agama</label>
+        <select class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" id="agama" required>
+            <option value="" disabled selected>Pilih Agama</option>
+            <option value="Islam">Islam</option>
+            <option value="Kristen">Kristen</option>
+            <option value="Katolik">Katolik</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Buddha">Buddha</option>
+            <option value="Konghucu">Konghucu</option>
+        </select>
+    </div>
+    
+      
+      <!-- Upload File Dokumen -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Upload Dokumen:</label>
+        <input type="file" id="rapor" accept="image/*" required>
+        <input type="file" id="ijazah" accept="image/*" required>
+        <input type="file" id="faktaIntegritas" accept="image/*" required>
+    </div>
+      
+     <!-- Input Nilai -->
+     <div class="grid grid-cols-2 gap-4">
+      <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="nilaiIndo">B. Indonesia</label>
+          <input class="nilai-input w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" 
+                 type="number" id="nilaiIndo" min="0" max="100" required>
+      </div>
+      <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="nilaiInggris">B. Inggris</label>
+          <input class="nilai-input w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" 
+                 type="number" id="nilaiInggris" min="0" max="100" required>
+      </div>
+      <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="nilaiIpa">IPA</label>
+          <input class="nilai-input w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" 
+                 type="number" id="nilaiIpa" min="0" max="100" required>
+      </div>
+      <div class="input-group">
+          <label class="block text-sm font-medium text-gray-700" for="nilaiMtk">Matematika</label>
+          <input class="nilai-input w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300" 
+                 type="number" id="nilaiMtk" min="0" max="100" required>
+      </div>
+  </div>
+
+    
+    <!-- Nilai Rata-rata -->
+    <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700" for="nilaiRata">Nilai Rata-Rata</label>
+        <input class="w-full p-2 border border-gray-300 rounded-md bg-gray-200 focus:ring focus:ring-gray-300" 
+               type="number" id="nilaiRata" readonly>
+    </div>
+    
+    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md w-full mt-4" type="submit">Simpan Data</button>
+
+    <script type="module">
+      // Firebase Configuration
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+      import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+      import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
+  
+      const firebaseConfig = {
+          apiKey: "AIzaSyD56P06t7d_P9ct7Ym1L8KNDvsfvMTQdp8",
+          authDomain: "informasippdb-a32b5.firebaseapp.com",
+          databaseURL: "https://informasippdb-a32b5-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "informasippdb-a32b5",
+          storageBucket: "gs://informasippdb-a32b5.appspot.com",
+          messagingSenderId: "298339506279",
+          appId: "1:298339506279:web:6a32dbbc7237faea6b9cc2",
+          measurementId: "G-TKWCD0N90E"
+      };
+  
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const storage = getStorage(app);
+  
+      // Fungsi upload file ke Firebase Storage
+      async function uploadFile(file, fileType, nis) {
+          if (!file) return null; // Jika tidak ada file, return null
+          const filePath = `user/${nis}/${fileType}.jpg`;
+          const fileRef = storageRef(storage, filePath);
+          await uploadBytes(fileRef, file);
+          return await getDownloadURL(fileRef);
+      }
+  
+      // Fungsi untuk menghitung nilai rata-rata
+      function hitungRataRata() {
+          let indo = parseFloat(document.getElementById("nilaiIndo").value) || 0;
+          let inggris = parseFloat(document.getElementById("nilaiInggris").value) || 0;
+          let ipa = parseFloat(document.getElementById("nilaiIpa").value) || 0;
+          let mtk = parseFloat(document.getElementById("nilaiMtk").value) || 0;
+  
+          let rataRata = (indo + inggris + ipa + mtk) / 4;
+          let rataRataFormatted = rataRata.toFixed(2); // 2 angka desimal
+          document.getElementById("nilaiRata").value = rataRataFormatted;
+  
+          // Simpan nilai rata-rata ke localStorage
+          localStorage.setItem("nilaiRata", rataRataFormatted);
+      }
+  
+      // Tambahkan event listener untuk menghitung rata-rata saat input nilai berubah
+      document.getElementById("nilaiIndo").addEventListener("input", hitungRataRata);
+      document.getElementById("nilaiInggris").addEventListener("input", hitungRataRata);
+      document.getElementById("nilaiIpa").addEventListener("input", hitungRataRata);
+      document.getElementById("nilaiMtk").addEventListener("input", hitungRataRata);
+  
+      // Handle simpan data ke Firebase
+     // Handle simpan data ke Firebase
+document.getElementById('dataForm').addEventListener('submit', async function (e) {
+    e.preventDefault();  // Mencegah refresh halaman
+
+    const submitButton = document.querySelector('button[type="submit"]');
+    submitButton.innerHTML = "Menyimpan..."; // Ubah teks tombol
+    submitButton.disabled = true; // Nonaktifkan tombol sementara
+
+    try {
+        let nis = localStorage.getItem('nis');
+        if (!nis) {
+            nis = document.getElementById("nis").value.trim();
+            if (!nis) {
+                alert("Harap masukkan NIS Anda!");
+                submitButton.innerHTML = "Simpan Data"; // Kembalikan teks tombol
+                submitButton.disabled = false;
+                return;
+            }
+            localStorage.setItem('nis', nis);
+        }
+
+        const dataRef = ref(database, 'userweb/' + nis);
+        let existingData = {};
+        
+        const snapshot = await get(dataRef);
+        if (snapshot.exists()) {
+            existingData = snapshot.val();
+        }
+
+        const rt = document.getElementById('rt').value.trim();
+        const rw = document.getElementById('rw').value.trim();
+        const kelurahan = document.getElementById('kelurahan').value.trim();
+        const kecamatan = document.getElementById('kecamatan').value.trim();
+        const nohp = document.getElementById('nohp').value.trim();
+        const agama = document.getElementById('agama').value.trim();
+
+        const nilaiIndo = parseFloat(document.getElementById('nilaiIndo').value) || 0;
+        const nilaiInggris = parseFloat(document.getElementById('nilaiInggris').value) || 0;
+        const nilaiIpa = parseFloat(document.getElementById('nilaiIpa').value) || 0;
+        const nilaiMtk = parseFloat(document.getElementById('nilaiMtk').value) || 0;
+        const nilaiRata = localStorage.getItem("nilaiRata") || "0.00";
+
+        const raporFile = document.getElementById('rapor').files[0];
+        const ijazahFile = document.getElementById('ijazah').files[0];
+        const faktaFile = document.getElementById('faktaIntegritas').files[0];
+
+        if (!rt || !rw || !kelurahan || !kecamatan || !nohp || !agama || 
+            nilaiIndo === 0 || nilaiInggris === 0 || nilaiIpa === 0 || nilaiMtk === 0) {
+            alert("Harap isi semua kolom!");
+            submitButton.innerHTML = "Simpan Data"; // Kembalikan teks tombol
+            submitButton.disabled = false;
+            return;
+        }
+
+        const raporURL = await uploadFile(raporFile, "rapor", nis);
+        const ijazahURL = await uploadFile(ijazahFile, "ijazah", nis);
+        const faktaURL = await uploadFile(faktaFile, "faktaIntegritas", nis);
+
+        const updatedData = {
+            name: existingData.name || "",
+            password: existingData.password || "",
+            alamat: {
+                RT: rt,
+                RW: rw,
+                Kelurahan: kelurahan,
+                Kecamatan: kecamatan
+            },
+            nohp: nohp,
+            agama: agama,
+            nilai: {
+                Indonesia: nilaiIndo,
+                Inggris: nilaiInggris,
+                IPA: nilaiIpa,
+                Matematika: nilaiMtk,
+                RataRata: nilaiRata
+            },
+            dokumen: {
+                rapor: raporURL || (existingData.dokumen ? existingData.dokumen.rapor : null),
+                ijazah: ijazahURL || (existingData.dokumen ? existingData.dokumen.ijazah : null),
+                faktaIntegritas: faktaURL || (existingData.dokumen ? existingData.dokumen.faktaIntegritas : null)
+            }
+        };
+
+        await update(dataRef, updatedData);
+        alert("Data berhasil disimpan!");
+        window.location.href = "index.html";
+
+    } catch (error) {
+        alert("Terjadi kesalahan: " + error.message);
+    } finally {
+        submitButton.innerHTML = "Simpan Data"; // Kembalikan teks tombol
+        submitButton.disabled = false; // Aktifkan kembali tombol
+    }
+});
+
+      // Ambil semua input nilai
+    const inputs = document.querySelectorAll('.nilai-input');
+
+inputs.forEach(input => {
+    input.addEventListener('input', function () {
+        if (this.value > 100) this.value = 100; 
+        if (this.value < 0) this.value = 0;     
+    });
+});
+  </script>  
+  
+</body>
+</html>

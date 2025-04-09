@@ -1,0 +1,107 @@
+/* Reset dasar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Pengaturan untuk body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+    color: #333;
+    padding: 20px;
+}
+
+/* Profil Section */
+.profil {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profil h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: #000000; /* Ubah warna judul menjadi hitam */
+    margin-bottom: 20px;
+}
+
+/* Profil Card */
+.profil-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Profil Info */
+.profil-info {
+    background-color: #e0e0e0; /* Warna abu-abu terang untuk profil */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profil-info h3 {
+    font-size: 1.5rem;
+    color: #000000; /* Warna hitam untuk subjudul */
+    margin-bottom: 15px;
+}
+
+.profil-info ul {
+    list-style-type: none;
+}
+
+.profil-info li {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.profil-info li strong {
+    font-weight: bold;
+    color: #000000; /* Warna hitam untuk teks label */
+}
+
+.profil-info li span {
+    color: #555;
+}
+
+/* Tombol Kembali */
+.kembali-btn {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: #000000; /* Tombol berwarna hitam */
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+.kembali-btn:hover {
+    background-color: #333333; /* Ubah warna tombol saat hover */
+}
+
+/* Responsif untuk tampilan kecil (mobile) */
+@media (max-width: 768px) {
+    .profil {
+        padding: 15px;
+    }
+
+    .profil-card {
+        flex-direction: column;
+    }
+
+    .profil-info {
+        padding: 15px;
+    }
+
+    .profil-info li {
+        font-size: 1rem;
+    }
+}

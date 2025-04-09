@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <h2 class="text-2xl font-bold text-center text-gray-700">Login Akun</h2>
+        <form id="loginForm" class="mt-4">
+            <input type="text" id="nis" placeholder="NIS" required class="w-full px-4 py-2 border rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">Login</button>
+        </form>
+        <button onclick="window.location.href='index.html'" class="mt-4 w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition">Kembali ke Beranda</button>
+        <p class="text-center text-gray-600 mt-4">Belum Punya Akun? <a href="daftar.html" class="text-blue-500 hover:underline">Daftar Disini</a></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyD56P06t7d_P9ct7Ym1L8KNDvsfvMTQdp8",
+            authDomain: "informasippdb-a32b5.firebaseapp.com",
+            databaseURL: "https://informasippdb-a32b5-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "informasippdb-a32b5",
+            storageBucket: "informasippdb-a32b5.appspot.com",
+            messagingSenderId: "298339506279",
+            appId: "1:298339506279:web:6a32dbbc7237faea6b9cc2",
+            measurementId: "G-TKWCD0N90E"
+        };
+    
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+    
+        // Jika sudah login, langsung ke halaman sesuai role
+        if (localStorage.getItem('nis')) {
+            const role = localStorage.getItem('role');
+            window.location.href = role === "admin" ? "admin.html" : "dashboard.html";
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+    
+            const nis = document.getElementById('nis').value.trim();
+            const password = document.getElementById('password').value.trim();
+    
+            if (!nis || !password) {
+                alert("Harap isi semua kolom!");
+                return;
+            }
+    
+            const userRef = ref(database, 'userweb/' + nis);
+    
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const user = snapshot.val();
+                    
+                    if (user.password === password) {
+                        localStorage.setItem('nis', nis);
+                        localStorage.setItem('name', user.name);
+                        simpanRoleDiLocalStorage(user.role || "user"); //  Panggil fungsi simpan role
+
+                        //  Ambil nilai rata-rata
+                        ambilNilaiRataRata(nis);
+
+                        alert("Login berhasil!");
+
+                        setTimeout(() => {
+                            window.location.href = user.role === "admin" ? "admin.html" : "dashboard.html";
+                        }, 1000);
+                    } else {
+                        alert("Password salah!");
+                    }
+                } else {
+                    alert("NIS tidak terdaftar!");
+                }
+            }).catch((error) => {
+                alert("Terjadi kesalahan: " + error.message);
+            });
+        });
+
+        //  Fungsi untuk menyimpan role di localStorage
+        function simpanRoleDiLocalStorage(role) {
+            localStorage.setItem('role', role); //  Debugging
+        }
+
+        //  Fungsi untuk mengambil nilai rata-rata
+        function ambilNilaiRataRata(nis) {
+            const nilaiRef = ref(database, `userweb/${nis}/nilai`);
+
+            get(nilaiRef)
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const nilai = snapshot.val();
+                        console.log("Data nilai:", nilai); // 🔹 Debugging
+
+                        const rataRata = nilai?.RataRata || "0"; // Default jika tidak ada
+                        console.log("Rata-rata diambil:", rataRata); // 🔹 Debugging
+
+                        localStorage.setItem("nilaiRata", rataRata);
+                    } else {
+                        console.log("Tidak ada data nilai untuk NIS:", nis);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Gagal mengambil nilai rata-rata:", error);
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+/* Header */
+header {
+    padding: 20px;
+    display: flex;
+    justify-content: flex-end;
+    background: white;
+}
+
+.nav .btn-login {
+    background: #007bff;
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-right: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Hero Section */
+.hero {
+    padding: 50px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    max-width: 1200px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.text-container {
+    max-width: 50%;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: #222;
+}
+
+p {
+    font-size: 16px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 20px;
+    background: #007bff;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.image-container img {
+    width: 400px;
+}
+
+/* Pengumuman */
+.announcement {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    margin-top: 20px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    font-size: 14px;
+    color: #666;
+}

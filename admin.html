@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getStorage, ref as storageRef, listAll, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+
+// 🔹 Konfigurasi Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyD56P06t7d_P9ct7Ym1L8KNDvsfvMTQdp8",
+    authDomain: "informasippdb-a32b5.firebaseapp.com",
+    databaseURL: "https://informasippdb-a32b5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "informasippdb-a32b5",
+    storageBucket: "informasippdb-a32b5.appspot.com",
+    messagingSenderId: "298339506279",
+    appId: "1:298339506279:web:6a32dbbc7237faea6b9cc2",
+    measurementId: "G-TKWCD0N90E"
+};
+
+// 🔹 Inisialisasi Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const storage = getStorage(app);
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const beritaRef = ref(database, 'berita');
+    const beritaForm = document.getElementById("beritaForm");
+    const beritaList = document.getElementById("beritaList");
+    const siswaList = document.getElementById("siswaList");
+    const pendaftaranRef = ref(database, "pendaftaran");
+
+    // 🔹 Submit Berita
+    beritaForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const judul = document.getElementById("judul").value.trim();
+        const konten = document.getElementById("konten").value.trim();
+        const kategori = document.getElementById("kategori").value; // Ambil kategori berita
+
+        if (!judul || !konten || !kategori) {
+            alert("Harap isi semua kolom!");
+            return;
+        }
+
+        // 🔹 Ambil waktu saat ini
+        const now = new Date();
+        const formattedTime = now.toISOString().slice(0, 19).replace("T", " "); // Format: YYYY-MM-DD HH:mm:ss
+
+        try {
+            // 🔹 Buat ID unik untuk berita baru
+    const newBeritaRef = push(beritaRef);
+
+    // Simpan berita baru
+    await set(newBeritaRef, { 
+        judul, 
+        konten, 
+        kategori, 
+        waktu: formattedTime 
+    });
+
+
+            alert("Berita berhasil ditambahkan!");
+            beritaForm.reset();
+        } catch (error) {
+            console.error("Error menyimpan berita:", error);
+        }
+    });
+
+
+    // 🔹 Tampilkan Pendaftaran Siswa
+    onValue(pendaftaranRef, (snapshot) => {
+    siswaList.innerHTML = "";
+
+    if (!snapshot.exists()) {
+        siswaList.innerHTML = "<p>Tidak ada data pendaftaran.</p>";
+        return;
+    }
+
+    const pendaftaranData = snapshot.val();
+    
+    Object.keys(pendaftaranData).forEach((school) => {
+        const schoolContainer = document.createElement("div");
+        schoolContainer.classList.add("p-4", "bg-white", "shadow-md", "rounded-md", "mb-4");
+
+        const schoolTitle = document.createElement("h3");
+        schoolTitle.classList.add("font-bold", "text-lg", "text-blue-500");
+        schoolTitle.textContent = `🏫 ${school}`;
+
+        schoolContainer.appendChild(schoolTitle);
+
+        // 🔹 Loop jurusan di sekolah tersebut
+        Object.keys(pendaftaranData[school]).forEach((major) => {
+            const majorContainer = document.createElement("div");
+            majorContainer.classList.add("pl-4", "border-l-2", "border-blue-300", "mt-2");
+
+            const majorTitle = document.createElement("h4");
+            majorTitle.classList.add("font-semibold", "text-gray-700");
+            majorTitle.textContent = `📚 ${major}`;
+
+            const studentList = document.createElement("ul");
+            studentList.classList.add("list-disc", "ml-6", "text-gray-600");
+
+            // 🔹 Loop setiap siswa dalam jurusan ini
+            Object.keys(pendaftaranData[school][major]).forEach((nis) => {
+                const studentData = pendaftaranData[school][major][nis];
+
+                const studentItem = document.createElement("li");
+                studentItem.textContent = `${studentData.name} (NIS: ${nis}) - Nilai Rata: ${studentData.nilaiRata}`;
+
+                studentList.appendChild(studentItem);
+            });
+
+            majorContainer.appendChild(majorTitle);
+            majorContainer.appendChild(studentList);
+            schoolContainer.appendChild(majorContainer);
+        });
+
+        siswaList.appendChild(schoolContainer);
+    });
+}, (error) => console.error("Error mengambil data pendaftaran:", error));
+});
+
+    // 🔹 Tampilkan Berita Terbaru
+onValue(ref(database, 'berita'), (snapshot) => {
+    beritaList.innerHTML = ""; // Kosongkan sebelum menampilkan berita
+
+    if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+            const beritaId = childSnapshot.key; // ID unik berita dari Firebase
+            const data = childSnapshot.val(); // Ambil data berita
+
+            // Buat elemen berita
+            const beritaItem = document.createElement("div");
+            beritaItem.classList.add("p-4", "bg-white", "shadow-md", "rounded-md", "mb-2");
+
+            beritaItem.innerHTML = `
+                <h3 class='font-bold'>${data.judul || "Tanpa Judul"}</h3>
+                <p>${data.konten || "Tidak ada konten"}</p>
+                <small class='text-gray-500'>Kategori: ${data.kategori || "Umum"} | Diperbarui: ${data.waktu || "Tidak tersedia"}</small>
+                <div class="mt-2">
+                    <button class="delete-btn bg-red-500 text-white px-3 py-1 rounded-md" data-id="${beritaId}">🗑️ Hapus</button>
+                </div>
+            `;
+
+            beritaList.appendChild(beritaItem);
+        });
+
+        // 🔹 Event Listener untuk Tombol Hapus
+        document.querySelectorAll(".delete-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const beritaId = e.target.getAttribute("data-id");
+                deleteBerita(beritaId);
+            });
+        });
+
+    } else {
+        beritaList.innerHTML = "<p class='text-gray-500'>Tidak ada berita terbaru.</p>";
+    }
+}, error => console.error("Error mengambil berita:", error));
+
+// 🔹 Fungsi Hapus Berita
+function deleteBerita(beritaId) {
+    if (confirm("Apakah Anda yakin ingin menghapus berita ini?")) {
+        const beritaRef = ref(database, `berita/${beritaId}`);
+        set(beritaRef, null) // Menghapus data dari Firebase
+            .then(() => alert("Berita berhasil dihapus!"))
+            .catch(error => console.error("Error menghapus berita:", error));
+    }
+}
+//user see
+document.addEventListener("DOMContentLoaded", function () {
+    const dataSiswaContainer = document.getElementById("tampilkanDataSiswa");
+    const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
+
+    let pendaftaranData = {}; // Menyimpan data siswa
+
+    // 🔹 Ambil data dari Firebase
+    const pendaftaranRef = ref(database, "userweb");
+    onValue(pendaftaranRef, (snapshot) => {
+        dataSiswaContainer.innerHTML = ""; // Kosongkan container sebelum menampilkan data
+
+        if (!snapshot.exists()) {
+            dataSiswaContainer.innerHTML = "<p class='text-gray-500'>Tidak ada data siswa yang mendaftar.</p>";
+            return;
+        }
+
+        // Filter hanya user dengan role "user"
+        pendaftaranData = Object.fromEntries(
+            Object.entries(snapshot.val()).filter(([_, siswa]) => siswa.role === "user")
+        );
+
+        tampilkanDataSiswa(pendaftaranData); // Kirim data hanya untuk user
+    }, (error) => console.error("Gagal mengambil data siswa:", error));
+
+    // 🔹 Fungsi untuk menampilkan daftar siswa
+    function tampilkanDataSiswa(dataSiswa) {
+        dataSiswaContainer.innerHTML = ""; // Kosongkan daftar sebelum menampilkan
+
+        Object.entries(dataSiswa).forEach(([nis, siswa]) => {
+            const userId = nis || "Tidak diketahui";
+            const siswaItem = document.createElement("div");
+            siswaItem.classList.add("p-4", "bg-white", "shadow-md", "rounded-md", "mb-4");
+
+            siswaItem.innerHTML = `
+                <h3 class="font-bold text-lg text-blue-500">📌 ${siswa.name || "Tanpa Nama"} (NIS: ${userId})</h3>
+                <button class="btn-selengkapnya bg-blue-500 text-white px-4 py-2 rounded mt-2">
+                    Selengkapnya
+                </button>
+                <button class="btn-hapus bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2" data-nis="${userId}">
+                    Hapus
+                </button>
+                <div class="detail-siswa hidden mt-2">
+                    <p><strong>📞 No HP:</strong> ${siswa.nohp || "Tidak tersedia"}</p>
+                    <p><strong>🕌 Agama:</strong> ${siswa.agama || "Tidak tersedia"}</p>
+                    <p><strong>🏠 Alamat:</strong> ${siswa.alamat?.Kecamatan || "-"}, ${siswa.alamat?.Kelurahan || "-"}, RT ${siswa.alamat?.RT || "-"} / RW ${siswa.alamat?.RW || "-"}</p>
+                    <p><strong>📊 Nilai:</strong></p>
+                    <ul class="ml-4 list-disc">
+                        <li>IPA: ${siswa.nilai?.IPA || "-"}</li>
+                        <li>Bahasa Indonesia: ${siswa.nilai?.Indonesia || "-"}</li>
+                        <li>Bahasa Inggris: ${siswa.nilai?.Inggris || "-"}</li>
+                        <li>Matematika: ${siswa.nilai?.Matematika || "-"}</li>
+                        <li><strong>📈 Rata-rata:</strong> ${siswa.nilai?.RataRata || "-"}</li>
+                    </ul>
+                    <p><strong>📄 Dokumen:</strong></p>
+                    <ul class="ml-4 list-disc">
+                        <li>Rapor: ${siswa.dokumen?.rapor ? `<button class="lihat-dokumen text-blue-500 underline" data-url="${siswa.dokumen.rapor}">📄 Lihat</button>` : "❌ Tidak ada"}</li>
+                        <li>Ijazah: ${siswa.dokumen?.ijazah ? `<button class="lihat-dokumen text-blue-500 underline" data-url="${siswa.dokumen.ijazah}">📄 Lihat</button>` : "❌ Tidak ada"}</li>
+                        <li>Fakta Integritas: ${siswa.dokumen?.faktaIntegritas ? `<button class="lihat-dokumen text-blue-500 underline" data-url="${siswa.dokumen.faktaIntegritas}">📄 Lihat</button>` : "❌ Tidak ada"}</li>
+                    </ul>
+                </div>
+            `;
+
+            dataSiswaContainer.appendChild(siswaItem);
+
+            const btnSelengkapnya = siswaItem.querySelector(".btn-selengkapnya");
+            const detailSiswa = siswaItem.querySelector(".detail-siswa");
+
+            btnSelengkapnya.addEventListener("click", function () {
+                detailSiswa.classList.toggle("hidden");
+                btnSelengkapnya.textContent = detailSiswa.classList.contains("hidden") ? "Selengkapnya" : "Tutup";
+            });
+
+            // 🔹 Event listener untuk tombol "Lihat" dokumen
+            siswaItem.querySelectorAll(".lihat-dokumen").forEach(button => {
+                button.addEventListener("click", function () {
+                    tampilkanModal(button.dataset.url);
+                });
+            });
+
+             // 🔹 Event listener untuk tombol hapus
+    document.addEventListener("click", function (event) {
+        if (event.target.classList.contains("btn-hapus")) {
+            const nis = event.target.getAttribute("data-nis");
+            hapusDataSiswa(nis);
+        }
+    });
+        });
+    }
+
+// 🔹 Fungsi untuk menghapus data siswa
+function hapusDataSiswa(nis) {
+    if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
+        const database = getDatabase(); // Pastikan database dipanggil dengan benar
+        const storage = getStorage(); // Ambil storage dengan getStorage()
+
+        const siswaRef = ref(database, `userweb/${nis}`);
+        const dokumenFolderRef = storageRef(storage, `user/${nis}/`); // Gunakan storageRef untuk Storage
+        const pendaftaranRef = ref(database, "pendaftaran");
+
+        // 🔹 Hapus data siswa dari "userweb"
+        remove(siswaRef)
+            .then(() => {
+                console.log(`✅ Data siswa dengan NIS ${nis} dihapus dari "userweb".`);
+
+                // 🔹 Hapus data dari "pendaftaran/{school}/{major}/{nis}"
+                return onValue(pendaftaranRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const pendaftaranData = snapshot.val();
+                        Object.entries(pendaftaranData).forEach(([school, majors]) => {
+                            Object.entries(majors).forEach(([major, students]) => {
+                                if (students[nis]) {
+                                    const siswaPendaftaranRef = ref(database, `pendaftaran/${school}/${major}/${nis}`);
+                                    remove(siswaPendaftaranRef)
+                                        .then(() => console.log(`✅ Data di "pendaftaran/${school}/${major}/${nis}" berhasil dihapus.`))
+                                        .catch((error) => console.error("❌ Gagal menghapus data pendaftaran:", error));
+                                }
+                            });
+                        });
+                    }
+                }, { onlyOnce: true });
+            })
+            .then(() => {
+                // 🔹 Hapus semua file di dalam folder "user/{nis}/" di Firebase Storage
+                return listAll(dokumenFolderRef);
+            })
+            .then((res) => {
+                let deletePromises = res.items.map((fileRef) => {
+                    console.log(`🗑 Menghapus file: ${fileRef.fullPath}`);
+                    return deleteObject(fileRef);
+                });
+
+                return Promise.all(deletePromises);
+            })
+            .then(() => {
+                console.log(`✅ Semua dokumen siswa dengan NIS ${nis} dihapus dari Storage.`);
+                alert("Data siswa berhasil dihapus.");
+            })
+            .catch((error) => {
+                console.error("❌ Gagal menghapus data siswa:", error);
+                alert("Gagal menghapus data siswa.");
+            });
+    }
+}
+
+    // 🔹 Fungsi pencarian berdasarkan NIS atau Nama
+    searchButton.addEventListener("click", function () {
+        const query = searchInput.value.trim().toLowerCase();
+        if (query === "") {
+            tampilkanDataSiswa(pendaftaranData);
+            return;
+        }
+        const hasilPencarian = Object.entries(pendaftaranData)
+            .filter(([nis, siswa]) => siswa.name?.toLowerCase().includes(query) || nis.includes(query))
+            .reduce((acc, [nis, siswa]) => {
+                acc[nis] = siswa;
+                return acc;
+            }, {});
+        tampilkanDataSiswa(hasilPencarian);
+    });
+
+    // 🔹 Fungsi untuk menampilkan modal dengan gambar
+    function tampilkanModal(urlGambar) {
+        const modal = document.getElementById("modalDokumen");
+        const modalGambar = document.getElementById("modalGambar");
+        modalGambar.src = urlGambar;
+        modal.classList.remove("hidden");
+    }
+
+    document.getElementById("modalDokumen").addEventListener("click", function (event) {
+        if (event.target.id === "modalDokumen" || event.target.classList.contains("close-modal")) {
+            document.getElementById("modalDokumen").classList.add("hidden");
+        }
+    });
+
+    function tutupModal() {
+        document.getElementById("modalDokumen").classList.add("hidden");
+    }
+});
+   </script>
+    
+    
+    
+</head>
+<body class="bg-gray-100">
+    <div class="flex flex-col md:flex-row h-screen">
+        <!-- Sidebar -->
+        <div class="w-full md:w-64 bg-blue-500 text-white p-5 space-y-4 md:min-h-screen">
+            <h2 class="text-2xl font-bold text-center md:text-left">Admin Panel</h2>
+            <nav>
+                <ul class="flex md:block justify-center space-x-4 md:space-x-0">
+                    <li>
+                        <button onclick="showTab('berita')" class="w-full text-left p-2 rounded-md transition hover:bg-blue-600" id="btn-berita">Berita</button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('siswa')" class="w-full text-left p-2 rounded-md transition hover:bg-blue-600" id="btn-siswa">Siswa yang Mendaftar</button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('datasiswa')" class="w-full text-left p-2 rounded-md transition hover:bg-blue-600" id="btn-data">Data Siswa</button>
+                    </li>
+                    <li>
+                        <button onclick="window.location.href='index.html'" class="w-full text-left p-2 rounded-md transition hover:bg-blue-600">Keberanda</button>
+
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 p-5 overflow-auto">
+            <div id="berita" class="content-section">
+                <h2 class="text-xl font-bold mb-4">Manajemen Berita</h2>
+                <form id="beritaForm" class="mb-4">
+                    <input type="text" id="judul" placeholder="Judul Berita" class="w-full p-2 border rounded-md mb-2" required>
+                    <textarea id="konten" placeholder="Isi Berita" class="w-full p-2 border rounded-md mb-2" required></textarea>
+                    <select id="kategori" class="w-full p-2 border rounded-md mb-2">
+                        <option value="" disabled selected>Pilih Kategori</option>
+                        <option value="Pengumuman">Pengumuman</option>
+                        <option value="Informasi PPDB">Informasi PPDB</option>
+                    </select>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Tambahkan Berita</button>
+                </form>
+                <div id="beritaList"></div>
+            </div>
+            <div id="siswa" class="content-section hidden">
+                <h2 class="text-xl font-bold mb-4">Siswa yang Mendaftar</h2>
+                <div id="siswaList"></div> <!-- 🔹 Data siswa akan muncul di sini -->
+            </div>
+            <div id="datasiswa" class="content-section hidden">
+                <!-- 🔹 Input Pencarian -->
+                <div class="mb-4 flex">
+                    <input type="text" id="searchInput" placeholder="Cari berdasarkan NIS atau Nama" 
+                        class="border p-2 rounded w-full">
+                    <button id="searchButton" class="bg-blue-500 text-white px-4 py-2 ml-2 rounded">
+                        🔍 Cari
+                    </button>
+                </div>
+            
+                <!-- 🔹 Tempat Menampilkan Data Siswa -->
+                <div id="tampilkanDataSiswa"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 Modal untuk melihat dokumen -->
+<div id="modalDokumen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white p-4 rounded shadow-lg">
+        <span class="close-modal text-red-500 cursor-pointer text-xl font-bold">✖</span>
+        <img id="modalGambar" src="" class="max-w-full max-h-[80vh] mt-2" alt="Dokumen">
+    </div>
+</div>
+
+
+
+    <script>
+        function showTab(tab) {
+            document.getElementById('berita').classList.add('hidden');
+            document.getElementById('siswa').classList.add('hidden');
+            document.getElementById('datasiswa').classList.add('hidden');
+            document.getElementById(tab).classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

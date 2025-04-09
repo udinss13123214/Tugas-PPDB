@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard PPDB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg w-full max-w-4xl">
+        <h2 class="text-2xl font-semibold text-blue-600 text-center">Profil Siswa</h2>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <div>
+                <ul class="space-y-2 text-gray-700">
+                    <li><strong>Nama:</strong> <span id="nama">Loading...</span></li>
+                    <li><strong>Agama:</strong> <span id="agama">Loading...</span></li>
+                    <li><strong>Alamat:</strong> <span id="alamat">Loading...</span></li>
+                    <li><strong>RT/RW:</strong> <span id="rtrw">Loading...</span></li>
+                    <li><strong>No HP:</strong> <span id="nohp">Loading...</span></li>
+                </ul>
+            </div>
+            <div>
+                <ul class="space-y-2 text-gray-700">
+                    <li><strong>Nilai IPA:</strong> <span id="ipa">Loading...</span></li>
+                    <li><strong>Nilai Indonesia:</strong> <span id="indonesia">Loading...</span></li>
+                    <li><strong>Nilai Inggris:</strong> <span id="inggris">Loading...</span></li>
+                    <li><strong>Nilai Matematika:</strong> <span id="matematika">Loading...</span></li>
+                    <li><strong>Rata-rata:</strong> <span id="ratarata">Loading...</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 bg-gray-200 p-4 rounded">
+            <h3 class="text-lg font-semibold text-blue-600">Status Pendaftaran</h3>
+            <ul id="pendaftaranList" class="text-gray-700 mt-2"></ul>
+        </div>
+
+        <div class="mt-6 bg-gray-200 p-4 rounded">
+            <h3 class="text-lg font-semibold text-blue-600">Dokumen</h3>
+            <ul class="list-disc ml-5">
+                <li><button onclick="showDocument('ijazah')" class="text-blue-600 underline">Ijazah</button></li>
+                <li><button onclick="showDocument('rapor')" class="text-blue-600 underline">Rapor</button></li>
+                <li><button onclick="showDocument('faktaIntegritas')" class="text-blue-600 underline">Fakta Integritas</button></li>
+            </ul>
+        </div>
+
+        <div class="mt-6 flex flex-col space-y-3">
+            <button onclick="openEditModal()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded text-center">Edit Profil</button>
+            <a href="index.html" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center">Kembali ke Beranda</a>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</button>
+            <button onclick="confirmDeleteAccount()" class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">Hapus Akun</button>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus Akun -->
+    <div id="confirmModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h3 class="text-lg font-bold text-red-600">Konfirmasi Hapus Akun</h3>
+            <p class="mt-2 text-gray-700">Apakah Anda yakin ingin menghapus akun ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="mt-4 flex justify-between">
+                <button onclick="deleteAccount()" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700">Ya, Hapus</button>
+                <button onclick="closeModal()" class="bg-gray-300 py-2 px-4 rounded hover:bg-gray-400">Batal</button>
+            </div>
+        </div>
+    </div>
+
+   <!-- Modal Edit Profil -->
+<div id="editModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+        <h2 class="text-xl font-semibold mb-4">Edit Profil</h2>
+
+        <label class="block mb-2">Nama:</label>
+        <input id="editName" type="text" class="w-full border p-2 rounded">
+
+        <div class="mb-4">
+            <label for="editAgama" class="block text-gray-700 font-semibold mb-2">Agama</label>
+            <select id="editAgama" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="Islam">Islam</option>
+                <option value="Kristen">Kristen</option>
+                <option value="Katolik">Katolik</option>
+                <option value="Hindu">Hindu</option>
+                <option value="Buddha">Buddha</option>
+                <option value="Konghucu">Konghucu</option>
+            </select>
+        </div>
+        
+
+
+        <label class="block mt-3 mb-2">Kelurahan:</label>
+        <input id="editKelurahan" type="text" class="w-full border p-2 rounded">
+
+        <label class="block mt-3 mb-2">Kecamatan:</label>
+        <input id="editKecamatan" type="text" class="w-full border p-2 rounded">
+
+        <label class="block mt-3 mb-2">RT:</label>
+        <input id="editRT" type="text" class="w-full border p-2 rounded">
+
+        <label class="block mt-3 mb-2">RW:</label>
+        <input id="editRW" type="text" class="w-full border p-2 rounded">
+
+        <label class="block mt-3 mb-2">No HP:</label>
+        <input id="editNoHp" type="text" class="w-full border p-2 rounded">
+
+        <div class="mt-4 flex justify-end space-x-2">
+            <button onclick="closeEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+            <button onclick="saveProfile()" class="bg-green-500 text-white px-4 py-2 rounded">Simpan</button>
+        </div>
+    </div>
+</div>
+
+
+    
+
+    <!-- Modal Lihat Dokumen -->
+    <div id="docModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 class="text-lg font-bold text-blue-600">Dokumen</h3>
+            <img id="docImage" src="" alt="Dokumen" class="mt-4 w-full h-auto rounded-lg">
+            <div class="mt-4 flex justify-center">
+                <button onclick="closeDocModal()" class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-700">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"; 
+import { getStorage, ref as storageRef, listAll, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
+
+// Konfigurasi Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyD56P06t7d_P9ct7Ym1L8KNDvsfvMTQdp8",
+    authDomain: "informasippdb-a32b5.firebaseapp.com",
+    databaseURL: "https://informasippdb-a32b5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "informasippdb-a32b5",
+    storageBucket: "informasippdb-a32b5.appspot.com",
+    messagingSenderId: "298339506279",
+    appId: "1:298339506279:web:6a32dbbc7237faea6b9cc2",
+    measurementId: "G-TKWCD0N90E"
+};
+
+// Inisialisasi Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const storage = getStorage(app);
+const nis = localStorage.getItem("nis");
+
+if (!nis) {
+    alert("Anda belum login!");
+    window.location.href = "login.html";
+} else {
+    get(ref(database, "userweb/" + nis)).then((snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            document.getElementById("nama").innerText = data.name || "-";
+            document.getElementById("agama").innerText = data.agama || "-";
+            document.getElementById("alamat").innerText = `${data.alamat?.Kelurahan || "-"}, ${data.alamat?.Kecamatan || "-"}`;
+            document.getElementById("rtrw").innerText = `RT ${data.alamat?.RT || "-"} / RW ${data.alamat?.RW || "-"}`;
+            document.getElementById("ipa").innerText = data.nilai?.IPA || "-";
+            document.getElementById("indonesia").innerText = data.nilai?.Indonesia || "-";
+            document.getElementById("inggris").innerText = data.nilai?.Inggris || "-";
+            document.getElementById("matematika").innerText = data.nilai?.Matematika || "-";
+            document.getElementById("ratarata").innerText = data.nilai?.RataRata || "-";
+            document.getElementById("nohp").innerText = data.nohp || "-";
+            window.dokumen = data.dokumen;
+        }
+    });
+
+    get(ref(database, "pendaftaran")).then((snapshot) => {
+        let daftarPendaftaran = "";
+        let ditemukan = false;
+
+        snapshot.forEach((schoolSnap) => {
+            schoolSnap.forEach((majorSnap) => {
+                if (majorSnap.hasChild(nis)) {
+                    ditemukan = true;
+                    daftarPendaftaran += `<li>${schoolSnap.key} - ${majorSnap.key}</li>`;
+                }
+            });
+        });
+
+        if (ditemukan) {
+            document.getElementById("pendaftaranList").innerHTML = daftarPendaftaran;
+        } else {
+            document.getElementById("pendaftaranList").innerHTML = "<p>Anda belum mendaftar.</p>";
+        }
+    });
+}
+
+window.confirmDeleteAccount = function () {
+    document.getElementById("confirmModal").classList.remove("hidden");
+};
+
+window.closeModal = function () {
+    document.getElementById("confirmModal").classList.add("hidden");
+};
+
+function deleteUserFolder(nis) {
+    return new Promise((resolve, reject) => {
+        const folderRef = storageRef(storage, `user/${nis}`);
+
+        listAll(folderRef)
+            .then((res) => {
+                if (res.items.length === 0) {
+                    resolve();
+                    return;
+                }
+
+                const deletePromises = res.items.map((fileRef) => deleteObject(fileRef));
+
+                Promise.all(deletePromises)
+                    .then(() => {
+                        console.log(`Semua file dalam folder user/${nis} berhasil dihapus.`);
+                        resolve();
+                    })
+                    .catch((error) => {
+                        console.error("Gagal menghapus beberapa file:", error);
+                        reject(error);
+                    });
+            })
+            .catch((error) => {
+                console.error("Gagal mengambil daftar file:", error);
+                reject(error);
+            });
+    });
+}
+
+window.deleteAccount = function () {
+    if (!nis) return;
+
+    // Fungsi untuk menghapus pendaftaran berdasarkan NIS
+    function deleteRegistrations() {
+        return new Promise((resolve, reject) => {
+            get(ref(database, "pendaftaran"))
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        resolve(); // Tidak ada data pendaftaran
+                        return;
+                    }
+
+                    let deletePromises = [];
+
+                    snapshot.forEach((schoolSnap) => {
+                        schoolSnap.forEach((majorSnap) => {
+                            if (majorSnap.hasChild(nis)) {
+                                let path = `pendaftaran/${schoolSnap.key}/${majorSnap.key}/${nis}`;
+                                deletePromises.push(remove(ref(database, path)));
+                            }
+                        });
+                    });
+
+                    return Promise.all(deletePromises)
+                        .then(() => {
+                            console.log("Semua pendaftaran terkait berhasil dihapus.");
+                            resolve();
+                        })
+                        .catch(reject);
+                })
+                .catch(reject);
+        });
+    }
+
+    // Jalankan penghapusan folder, data sekolah, dan akun
+    deleteUserFolder(nis)
+        .then(() => deleteRegistrations()) // Hapus pendaftaran terkait
+        .then(() => remove(ref(database, "userweb/" + nis))) // Hapus akun
+        .then(() => {
+            alert("Akun dan semua pendaftaran berhasil dihapus!");
+            localStorage.clear(); // Hapus semua localStorage
+            window.location.href = "login.html";
+        })
+        .catch((error) => {
+            alert("Gagal menghapus akun: " + error.message);
+        });
+};
+
+
+window.showDocument = function (docType) {
+    document.getElementById("docImage").src = window.dokumen?.[docType] || "#";
+    document.getElementById("docModal").classList.remove("hidden");
+};
+
+window.closeDocModal = function () {
+    document.getElementById("docModal").classList.add("hidden");
+};
+// Fungsi Logout
+window.logout = function () {
+    localStorage.clear(); // Menghapus semua data di localStorage
+    window.location.href = "index.html"; // Redirect ke halaman login
+};
+
+//edit
+// Fungsi untuk membuka modal edit
+window.openEditModal = function () {
+    document.getElementById("editModal").classList.remove("hidden");
+
+    // Mengisi input dengan data yang sudah ada
+    document.getElementById("editName").value = document.getElementById("nama").innerText;
+
+    // Mengambil data agama dari tampilan dan mengatur dropdown
+    const agamaSekarang = document.getElementById("agama").innerText;
+    document.getElementById("editAgama").value = agamaSekarang;
+
+    // Pisahkan alamat menjadi kelurahan & kecamatan
+    const alamatText = document.getElementById("alamat").innerText.split(",");
+    document.getElementById("editKelurahan").value = alamatText[0].trim();
+    document.getElementById("editKecamatan").value = alamatText[1]?.trim() || "";
+
+    // Pisahkan RT/RW
+    const rtRwText = document.getElementById("rtrw").innerText.split(" / ");
+    document.getElementById("editRT").value = rtRwText[0]?.replace("RT ", "").trim() || "";
+    document.getElementById("editRW").value = rtRwText[1]?.replace("RW ", "").trim() || "";
+
+    document.getElementById("editNoHp").value = document.getElementById("nohp").innerText;
+};
+
+// Fungsi untuk menutup modal edit
+window.closeEditModal = function () {
+    document.getElementById("editModal").classList.add("hidden");
+};
+
+// Fungsi untuk mengambil nilai dropdown agama
+window.getSelectedAgama = function () {
+    return document.getElementById("editAgama").value;
+};
+
+// Fungsi untuk menyimpan perubahan ke Firebase
+window.saveProfile = function () {
+    const newName = document.getElementById("editName").value;
+    const newAgama = getSelectedAgama(); // Ambil nilai dari dropdown
+    const newKelurahan = document.getElementById("editKelurahan").value;
+    const newKecamatan = document.getElementById("editKecamatan").value;
+    const newRT = document.getElementById("editRT").value;
+    const newRW = document.getElementById("editRW").value;
+    const newNoHp = document.getElementById("editNoHp").value;
+
+    if (!nis) {
+        alert("Anda belum login!");
+        return;
+    }
+
+    // Perbarui data tanpa menghapus informasi lain
+    const userRef = ref(database, "userweb/" + nis);
+    update(userRef, {
+        name: newName,
+        agama: newAgama,
+        alamat: {
+            Kelurahan: newKelurahan,
+            Kecamatan: newKecamatan,
+            RT: newRT,
+            RW: newRW
+        },
+        nohp: newNoHp
+    })
+    .then(() => {
+        alert("Profil berhasil diperbarui!");
+        // Perbarui tampilan tanpa reload
+        document.getElementById("nama").innerText = newName;
+        document.getElementById("agama").innerText = newAgama;
+        document.getElementById("alamat").innerText = `${newKelurahan}, ${newKecamatan}`;
+        document.getElementById("rtrw").innerText = `RT ${newRT} / RW ${newRW}`;
+        document.getElementById("nohp").innerText = newNoHp;
+        closeEditModal();
+    })
+    .catch((error) => {
+        alert("Gagal memperbarui profil: " + error.message);
+    });
+};
+
+
+    </script>
+</body>
+</html>

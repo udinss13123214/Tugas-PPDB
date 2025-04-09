@@ -1,0 +1,191 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.school-type-selection {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-bottom: 40px;
+}
+
+.school-option {
+    cursor: pointer;
+    text-align: center;
+}
+
+.school-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.school-image:hover {
+    transform: scale(1.1);
+}
+
+.school-list {
+    display: none;  /* Sekolah tidak ditampilkan sebelum jenis sekolah dipilih */
+    margin-top: 30px;
+    opacity: 0;
+    transform: translateY(-30px); /* Mulai dari posisi atas */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Transisi untuk fade dan slide */
+}
+
+.school-list.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);  /* Slide ke bawah ke posisi semula */
+}
+
+.school-item {
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+}
+
+.school-item img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.school-item p {
+    color: #333;
+    font-size: 18px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.close-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none; /* Tombol tutup disembunyikan saat pertama kali */
+}
+
+.close-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Alert box */
+.alert-box {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.alert-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.alert-content button {
+    margin: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#confirm-btn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+}
+
+#confirm-btn:hover {
+    background-color: #27ae60;
+}
+
+#cancel-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+}
+
+#cancel-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Alert sukses */
+#success-alert .alert-content {
+    background-color: #3498db;
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+}
+
+#success-alert .alert-content p {
+    font-size: 18px;
+}
+
+#success-alert .alert-content button {
+    background-color: #2980b9;
+}
+
+#success-alert .alert-content button:hover {
+    background-color: #1f6391;
+}
+
+/* Styling tombol jurusan */
+.school-item button {
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.school-item button:hover {
+    background-color: #1f6391;
+}
+
+.school-item button:active {
+    background-color: #1a5276;
+}
+
+.school-item button:focus {
+    outline: none;
+}

@@ -1,0 +1,125 @@
+/* Gaya dasar untuk body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+  }
+  
+  /* Container Utama */
+  .login-container {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Judul */
+  h2 {
+    text-align: center;
+    color: #202124;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+  
+  /* Form styling */
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Grup input untuk label dan input field */
+  .input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  /* Label di sebelah kiri input */
+  .input-group label {
+    width: 150px;
+    font-size: 14px;
+    color: #5f6368;
+    margin-right: 10px;
+  }
+  
+  /* Input field */
+  .input-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .input-group input:focus {
+    border-color: #4285f4;
+    box-shadow: 0 0 3px rgba(66, 133, 244, 0.5);
+  }
+  
+  /* Kontainer khusus untuk alamat dan nilai agar responsif */
+  .alamat-container,
+  .nilai-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .alamat-container .input-group,
+  .nilai-container .input-group {
+    flex: 1;
+    min-width: 220px;
+  }
+  
+  /* File upload styling */
+  .file-upload {
+    margin-bottom: 15px;
+  }
+  
+  .file-upload label {
+    font-size: 14px;
+    color: #5f6368;
+    margin-bottom: 5px;
+    display: block;
+  }
+  
+  .file-upload input[type="file"] {
+    border: none;
+  }
+  
+  /* Tombol simpan data */
+  button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+  }
+  
+  button:hover {
+    background-color: #1669c1;
+  }
+  
+  /* Responsif untuk layar kecil */
+  @media (max-width: 600px) {
+    .input-group {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .input-group label {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+  }
+  
