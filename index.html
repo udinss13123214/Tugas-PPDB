@@ -65,8 +65,8 @@
         <h2 class="text-lg font-semibold">SMA</h2>
         <table class="w-full mt-2 border-collapse border border-gray-300">
             <tr class="border border-gray-300"><td class="p-2">SMA Negeri 2 Surakarta - IPA, IPS</td></tr>
-            <tr class="border border-gray-300"><td class="p-2">SMA Batik Surakarta - IPS, IPS</td></tr>
-            <tr class="border border-gray-300"><td class="p-2">SMA Negeri 3 Surakarta - IPA, IPS</td></tr>
+            <tr class="border border-gray-300"><td class="p-2">SMA Negeri 3 Surakarta - IPS</td></tr>
+            <tr class="border border-gray-300"><td class="p-2">SMA Negeri 4 Surakarta - IPA, IPS</td></tr>
         </table>
         <button onclick="openModal('SMA')" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Daftar</button>
     </div>
@@ -74,10 +74,10 @@
     <div class="bg-white p-6 rounded-lg shadow-lg">
         <h2 class="text-lg font-semibold">SMK</h2>
         <table class="w-full mt-2 border-collapse border border-gray-300">
-            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 4 Surakarta - AKL, RPL, ULP</td></tr>
+            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 4 Surakarta - RPL</td></tr>
             <tr class="border border-gray-300"><td class="p-2">SMK Negeri 6 Surakarta - AKL, RPL, ULP</td></tr>
-            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 5 Surakarta - AKL, RPL, ULP</td></tr>
-            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 7 Surakarta - AKL, RPL, ULP</td></tr>
+            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 5 Surakarta - RPL, ULP</td></tr>
+            <tr class="border border-gray-300"><td class="p-2">SMK Negeri 7 Surakarta - AKL, ULP</td></tr>
         </table>
         <button onclick="openModal('SMK')" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Daftar</button>
     </div>
@@ -105,6 +105,35 @@
     </section>
 <!-- END OF Pengunguman -->
 
+
+<section class="container mx-auto my-6 px-4">
+  <h2 class="text-lg font-semibold mb-4">Lihat Peringkat Siswa</h2>
+
+  <div class="flex flex-col md:flex-row gap-4 mb-4">
+    <!-- Dropdown Sekolah -->
+    <select id="sekolahSelect" class="p-2 border rounded w-full md:w-1/2">
+      <option value="">-- Pilih Sekolah --</option>
+      <option value="SMA Negeri 2 Surakarta">SMA Negeri 2 Surakarta</option>
+      <option value="SMA Negeri 3 Surakarta">SMA Negeri 3 Surakarta</option>
+      <option value="SMA Negeri 4 Surakarta">SMA Negeri 4 Surakarta</option>
+      <option value="SMK Negeri 4 Surakarta">SMK Negeri 4 Surakarta</option>
+      <option value="SMK Negeri 5 Surakarta">SMK Negeri 5 Surakarta</option>
+      <option value="SMK Negeri 6 Surakarta">SMK Negeri 6 Surakarta</option>
+      <option value="SMK Negeri 7 Surakarta">SMK Negeri 7 Surakarta</option>
+    </select>
+
+    <!-- Dropdown Jurusan -->
+    <div id="jurusanContainer" class="w-full md:w-1/2">
+      <select id="jurusanSelect" class="p-2 border rounded w-full"></select>
+    </div>
+  </div>
+
+  <!-- Output Ranking -->
+  <div id="rankingOutput" class="mt-4"></div>
+</section>
+
+
+
     <section class="container mx-auto my-6 px-4">
         <h2 class="text-lg font-semibold">Persyaratan Dokumen</h2>
         <ul class="list-disc pl-6 mt-2">
@@ -123,7 +152,8 @@
 <!-- Firebase SDK -->
 <script type="module">  
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
   
     // 🔹 Konfigurasi Firebase
     const firebaseConfig = {
@@ -175,6 +205,112 @@ function fetchBerita() {
         }
     });
 }
+//list peringkat
+const dataSekolah = {
+    "SMA Negeri 2 Surakarta": ["IPA", "IPS"],
+    "SMA Negeri 3 Surakarta": ["IPS"],
+    "SMA Negeri 4 Surakarta": ["IPA", "IPS"],
+    "SMK Negeri 4 Surakarta": ["RPL"],
+    "SMK Negeri 6 Surakarta": ["AKL", "RPL", "ULP"],
+    "SMK Negeri 5 Surakarta": ["RPL", "ULP"],
+    "SMK Negeri 7 Surakarta": ["AKL", "ULP"]
+};
+
+function lihatPeringkat(school, major) {
+    const db = window.firebaseDatabase;
+    const rankingRef = window.firebaseRef(`pendaftaran/${school}/${major}`);
+    const rankingOutput = document.getElementById("rankingOutput");
+
+    rankingOutput.innerHTML = `<p class="text-gray-500 italic">Memuat data...</p>`;
+
+    get(rankingRef).then((snapshot) => {
+        if (!snapshot.exists()) {
+            rankingOutput.innerHTML = `<p class="text-red-600">Belum ada data pendaftaran untuk <strong>${school}</strong> - <strong>${major}</strong>.</p>`;
+            return;
+        }
+
+        const siswaArray = [];
+        snapshot.forEach(childSnapshot => {
+            const siswa = childSnapshot.val();
+            siswaArray.push({
+                nama: siswa.name || "Tanpa Nama",
+                nilai: siswa.nilaiRata || siswa.nilai || 0
+            });
+        });
+
+        siswaArray.sort((a, b) => b.nilai - a.nilai);
+
+        const output = siswaArray.map((siswa, index) => `
+            <tr>
+                <td class="border px-4 py-2 text-center">${index + 1}</td>
+                <td class="border px-4 py-2">${siswa.nama}</td>
+                <td class="border px-4 py-2 text-center">${siswa.nilai}</td>
+            </tr>
+        `).join("");
+
+        rankingOutput.innerHTML = `
+            <h3 class="text-md font-semibold mb-2">Peringkat - ${school} (${major})</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full border border-gray-300 mb-4 text-sm">
+                  <thead class="bg-gray-100">
+                      <tr>
+                          <th class="border px-4 py-2">Peringkat</th>
+                          <th class="border px-4 py-2">Nama</th>
+                          <th class="border px-4 py-2">Nilai</th>
+                      </tr>
+                  </thead>
+                  <tbody>${output}</tbody>
+              </table>
+            </div>
+        `;
+    }).catch(error => {
+        rankingOutput.innerHTML = `<p class="text-red-600">❌ Gagal memuat data: ${error.message}</p>`;
+        console.error("Gagal ambil data:", error);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sekolahSelect = document.getElementById("sekolahSelect");
+    const jurusanSelect = document.getElementById("jurusanSelect");
+    const jurusanContainer = document.getElementById("jurusanContainer"); // <--- Container jurusan
+
+    function updateJurusanDropdown() {
+        const sekolah = sekolahSelect.value;
+        const jurusanList = dataSekolah[sekolah] || [];
+
+        jurusanSelect.innerHTML = "";
+
+        if (jurusanList.length > 0) {
+            jurusanContainer.style.display = "block"; // tampilkan dropdown jurusan
+            jurusanList.forEach(jurusan => {
+                const option = document.createElement("option");
+                option.value = jurusan;
+                option.textContent = jurusan;
+                jurusanSelect.appendChild(option);
+            });
+
+            lihatPeringkat(sekolah, jurusanList[0]);
+        } else {
+            jurusanContainer.style.display = "none"; // sembunyikan
+            document.getElementById("rankingOutput").innerHTML = "";
+        }
+    }
+
+    sekolahSelect.addEventListener("change", updateJurusanDropdown);
+
+    jurusanSelect.addEventListener("change", () => {
+        const sekolah = sekolahSelect.value;
+        const jurusan = jurusanSelect.value;
+        if (sekolah && jurusan) {
+            lihatPeringkat(sekolah, jurusan);
+        }
+    });
+
+    // Awalnya sembunyikan jurusan dropdown
+    document.getElementById("jurusanContainer").style.display = "none";
+});
+
+//akhir list
 
 // Panggil function saat halaman dimuat
 document.addEventListener("DOMContentLoaded", fetchBerita);
